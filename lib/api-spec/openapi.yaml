@@ -1,15 +1,16 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Two Become One - Couples Avatar API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: blend
+    description: Couple photo blending operations
 paths:
   /healthz:
     get:
@@ -24,6 +25,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /blend:
+    post:
+      operationId: blendPhotos
+      tags: [blend]
+      summary: Blend two photos into a cartoon avatar
+      description: Accepts two base64-encoded photos and returns a blended cartoon avatar image URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlendInput"
+      responses:
+        "200":
+          description: Blended avatar image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlendResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +68,41 @@ components:
       required:
         - status
 
+    BlendInput:
+      type: object
+      required:
+        - photo1
+        - photo2
+      properties:
+        photo1:
+          type: string
+          description: Base64-encoded image data (data URL format) for person 1
+        photo2:
+          type: string
+          description: Base64-encoded image data (data URL format) for person 2
+        style:
+          type: string
+          enum: [cartoon, watercolor, anime, painterly]
+          default: cartoon
+          description: Art style for the blended avatar
+
+    BlendResult:
+      type: object
+      required:
+        - imageUrl
+        - message
+      properties:
+        imageUrl:
+          type: string
+          description: Base64 data URL of the generated blended avatar
+        message:
+          type: string
+          description: A celebratory message about the union
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
