@@ -212,6 +212,11 @@ function DraggableCard({ card, onComplete, onDrift }: { card: Card; onComplete: 
               <div className="space-y-4 text-center">
                 <p className="text-xl font-serif font-semibold text-foreground leading-snug whitespace-pre-line">{card.content}</p>
                 {card.subtext && <p className="text-sm text-muted-foreground italic">{card.subtext}</p>}
+                {card.framework && (
+                  <p className="text-[10px] text-muted-foreground/60 italic border-t border-white/10 pt-3 mt-2 leading-relaxed">
+                    {card.framework}
+                  </p>
+                )}
               </div>
             )}
           </div>

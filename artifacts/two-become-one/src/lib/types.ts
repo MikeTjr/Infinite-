@@ -10,6 +10,7 @@ export interface Card {
   options?: [string, string];
   timerSeconds?: number;
   minSessions?: number;
+  framework?: string;
 }
 
 export interface AvatarSettings {
