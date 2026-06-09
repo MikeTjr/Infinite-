@@ -1,6 +1,8 @@
 import { Router } from "express";
 import OpenAI from "openai";
 import { BlendPhotosBody } from "@workspace/api-zod";
+import { blendRateLimiter } from "../middlewares/rateLimit";
+import { validateImagePayload } from "../middlewares/security";
 
 const router = Router();
 
@@ -8,7 +10,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-router.post("/blend", async (req, res) => {
+router.post("/blend", blendRateLimiter, async (req, res) => {
   const parsed = BlendPhotosBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid request body" });
@@ -16,6 +18,12 @@ router.post("/blend", async (req, res) => {
   }
 
   const { photo1, photo2, style = "cartoon" } = parsed.data;
+
+  const validation = validateImagePayload([photo1, photo2]);
+  if (!validation.valid) {
+    res.status(413).json({ error: validation.error });
+    return;
+  }
 
   const styleDescriptions: Record<string, string> = {
     cartoon: "a vibrant cartoon illustration style, bold outlines, bright colors, expressive and playful",

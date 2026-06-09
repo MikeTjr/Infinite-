@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  title: Api
-  version: 0.1.0
-  description: Two Become One - Couples Avatar API
+  title: Infinite Us API
+  version: 0.2.0
+  description: Infinite Us — Couples relationship platform API
 servers:
   - url: /api
     description: Base API path
@@ -11,6 +11,13 @@ tags:
     description: Health operations
   - name: blend
     description: Couple photo blending operations
+  - name: rooms
+    description: Real-time sync room management
+  - name: bonds
+    description: Community bonds and leaderboard
+  - name: journey
+    description: Seasonal journey programs
+
 paths:
   /healthz:
     get:
@@ -30,8 +37,8 @@ paths:
     post:
       operationId: blendPhotos
       tags: [blend]
-      summary: Blend two photos into a cartoon avatar
-      description: Accepts two base64-encoded photos and returns a blended cartoon avatar image URL
+      summary: Blend two photos into a styled avatar
+      description: Accepts two base64-encoded photos and returns a blended avatar image URL. Rate limited to 3 requests per minute.
       requestBody:
         required: true
         content:
@@ -51,8 +58,319 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "413":
+          description: Image payload too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rooms:
+    post:
+      operationId: createRoom
+      tags: [rooms]
+      summary: Create a sync room
+      description: Creates an ephemeral game room. Returns a roomId and joinCode for the partner.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoomInput"
+      responses:
+        "201":
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rooms/join/{code}:
+    get:
+      operationId: joinRoomByCode
+      tags: [rooms]
+      summary: Look up a room by join code
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Room found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomWithPartners"
+        "404":
+          description: Room not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rooms/{id}:
+    get:
+      operationId: getRoom
+      tags: [rooms]
+      summary: Get room state
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Room state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomWithPartners"
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateRoom
+      tags: [rooms]
+      summary: Update room state
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoomInput"
+      responses:
+        "200":
+          description: Updated room
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteRoom
+      tags: [rooms]
+      summary: Delete a room
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Room deleted
+
+  /bonds:
+    post:
+      operationId: createBond
+      tags: [bonds]
+      summary: Create a community bond group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBondInput"
+      responses:
+        "201":
+          description: Bond created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BondResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bonds/{code}:
+    get:
+      operationId: getBond
+      tags: [bonds]
+      summary: Get bond by code
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bond found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BondResult"
+        "404":
+          description: Bond not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bonds/{code}/join:
+    post:
+      operationId: joinBond
+      tags: [bonds]
+      summary: Join a bond group
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinBondInput"
+      responses:
+        "200":
+          description: Joined bond
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BondResult"
+        "404":
+          description: Bond not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bonds/{code}/leaderboard:
+    get:
+      operationId: getBondLeaderboard
+      tags: [bonds]
+      summary: Get leaderboard for a bond
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Leaderboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardResult"
+        "404":
+          description: Bond not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /journey/start:
+    post:
+      operationId: startJourney
+      tags: [journey]
+      summary: Start a seasonal journey program
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartJourneyInput"
+      responses:
+        "201":
+          description: Journey started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JourneyState"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /journey/{coupleId}:
+    get:
+      operationId: getJourney
+      tags: [journey]
+      summary: Get current journey state
+      parameters:
+        - in: path
+          name: coupleId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Journey state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JourneyState"
+        "404":
+          description: No active journey
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /journey/checkin:
+    post:
+      operationId: journeyCheckin
+      tags: [journey]
+      summary: Record a daily journey check-in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JourneyCheckinInput"
+      responses:
+        "200":
+          description: Check-in recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JourneyCheckinResult"
+        "404":
+          description: No active journey
           content:
             application/json:
               schema:
@@ -94,10 +412,226 @@ components:
       properties:
         imageUrl:
           type: string
-          description: Base64 data URL of the generated blended avatar
+          description: Base64 data URL or CDN URL of the generated blended avatar
         message:
           type: string
           description: A celebratory message about the union
+
+    CreateRoomInput:
+      type: object
+      properties:
+        coupleId:
+          type: string
+
+    UpdateRoomInput:
+      type: object
+      properties:
+        phase:
+          type: string
+        currentCardId:
+          type: string
+        stateJson:
+          type: object
+
+    RoomResponse:
+      type: object
+      required:
+        - room
+      properties:
+        room:
+          $ref: "#/components/schemas/RoomState"
+        joinCode:
+          type: string
+
+    RoomWithPartners:
+      type: object
+      required:
+        - room
+        - connectedPartners
+      properties:
+        room:
+          $ref: "#/components/schemas/RoomState"
+        connectedPartners:
+          type: integer
+
+    RoomState:
+      type: object
+      required:
+        - id
+        - joinCode
+        - phase
+        - stateJson
+        - createdAt
+        - expiresAt
+      properties:
+        id:
+          type: string
+        joinCode:
+          type: string
+        coupleId:
+          type: string
+        phase:
+          type: string
+        currentCardId:
+          type: string
+        stateJson:
+          type: object
+        createdAt:
+          type: string
+        expiresAt:
+          type: string
+
+    CreateBondInput:
+      type: object
+      required:
+        - name
+        - coupleId
+        - coupleName
+      properties:
+        name:
+          type: string
+          maxLength: 60
+        coupleId:
+          type: string
+        coupleName:
+          type: string
+        score:
+          type: integer
+          minimum: 0
+          default: 0
+
+    JoinBondInput:
+      type: object
+      required:
+        - coupleId
+        - coupleName
+      properties:
+        coupleId:
+          type: string
+        coupleName:
+          type: string
+        score:
+          type: integer
+          minimum: 0
+          default: 0
+
+    BondResult:
+      type: object
+      required:
+        - id
+        - name
+        - code
+        - createdAt
+        - memberCount
+        - memberNames
+        - collectiveScore
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        createdAt:
+          type: string
+        memberCount:
+          type: integer
+        memberNames:
+          type: array
+          items:
+            type: string
+        collectiveScore:
+          type: integer
+
+    LeaderboardEntry:
+      type: object
+      required:
+        - rank
+        - name
+        - score
+        - coupleId
+      properties:
+        rank:
+          type: integer
+        name:
+          type: string
+        score:
+          type: integer
+        coupleId:
+          type: string
+
+    LeaderboardResult:
+      type: object
+      required:
+        - leaderboard
+        - bondName
+        - total
+      properties:
+        leaderboard:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+        bondName:
+          type: string
+        total:
+          type: integer
+
+    StartJourneyInput:
+      type: object
+      required:
+        - coupleId
+        - seasonId
+      properties:
+        coupleId:
+          type: string
+        seasonId:
+          type: string
+
+    JourneyCheckinInput:
+      type: object
+      required:
+        - coupleId
+      properties:
+        coupleId:
+          type: string
+
+    JourneyState:
+      type: object
+      required:
+        - coupleId
+        - currentSeason
+        - startedAt
+        - completedDays
+        - checkinDates
+      properties:
+        coupleId:
+          type: string
+        currentSeason:
+          type: string
+        startedAt:
+          type: string
+        completedDays:
+          type: integer
+        lastCheckinAt:
+          type: string
+        checkinDates:
+          type: array
+          items:
+            type: string
+
+    JourneyCheckinResult:
+      type: object
+      required:
+        - journey
+        - alreadyCheckedIn
+        - message
+      properties:
+        journey:
+          $ref: "#/components/schemas/JourneyState"
+        alreadyCheckedIn:
+          type: boolean
+        message:
+          type: string
 
     ErrorResponse:
       type: object

@@ -117,4 +117,29 @@ export interface AppState {
   journey?: JourneyState;
   retiredCards: string[];
   setupComplete: boolean;
+  syncMode?: 'local' | 'live';
+}
+
+// ─── Real-Time / WebSocket Types ─────────────────────────────────────────────
+
+export type GameEvent =
+  | { type: 'CARD_DRAWN'; cardId: string }
+  | { type: 'PARTNER_1_CHOICE'; choice: 'A' | 'B' }
+  | { type: 'PARTNER_2_CHOICE'; choice: 'A' | 'B' }
+  | { type: 'REVEAL' }
+  | { type: 'SESSION_COMPLETE'; scoreEarned: number }
+  | { type: 'PHASE_CHANGE'; phase: string }
+  | { type: 'PARTNER_JOINED'; partnerName: string }
+  | { type: 'PING' }
+  | { type: 'PONG' };
+
+export interface RoomState {
+  id: string;
+  joinCode: string;
+  phase: string;
+  currentCardId?: string;
+  connectedPartners: number;
+  stateJson: Record<string, unknown>;
+  createdAt: string;
+  expiresAt: string;
 }
