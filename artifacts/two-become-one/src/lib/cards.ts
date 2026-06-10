@@ -1081,7 +1081,114 @@ export const SEASONS: Season[] = [
       'What does success look like on the other side of this?',
     ],
   },
+
+
+  // ══════════════════════════════════════════════════════════════
+  // NOSTALGIA — era-specific cards tagged by decade
+  // ══════════════════════════════════════════════════════════════
+
+  // 1980s
+  { id: 'nos-80-01', type: 'nostalgia' as const, era: '80s', yearRange: [1980, 1989] as [number,number], category: 'tech' as const, depth: 'surface' as const, content: 'What was your first video game console — or the one you remember most?', subtext: "Atari, Commodore 64, NES... Take your pick. Did your parents hate it as much as everyone's did?" },
+  { id: 'nos-80-02', type: 'nostalgia' as const, era: '80s', yearRange: [1980, 1989] as [number,number], category: 'music' as const, depth: 'surface' as const, content: 'If your relationship had an 80s power ballad as its theme song, which would it be?', subtext: '"Total Eclipse of the Heart"? "Here I Go Again"? Perform 10 seconds of it.' },
+  { id: 'nos-80-03', type: 'nostalgia' as const, era: '80s', yearRange: [1980, 1989] as [number,number], category: 'culture' as const, depth: 'surface' as const, content: 'Would you two have survived high school in the 80s together? Which clique would each of you have been in?', subtext: 'The jocks, nerds, preps, burnouts, or nobodies. Be honest.' },
+  { id: 'nos-80-04', type: 'nostalgia' as const, era: '80s', yearRange: [1980, 1989] as [number,number], category: 'film' as const, depth: 'surface' as const, content: 'Which 80s movie couple best describes where you two started?', subtext: 'Think Dirty Dancing, Pretty in Pink, Say Anything... or something darker.' },
+  { id: 'nos-80-05', type: 'nostalgia' as const, era: '80s', yearRange: [1980, 1989] as [number,number], category: 'daily' as const, depth: 'surface' as const, content: 'If you had to reach your partner with 1980s technology only, how would you do it?', subtext: 'No texts, no email. A pager? A note slipped under a door? Show up at their house?' },
+
+  // 1990s
+  { id: 'nos-90-01', type: 'nostalgia' as const, era: '90s', yearRange: [1990, 1999] as [number,number], category: 'tech' as const, depth: 'surface' as const, content: 'What would you have put on a mixtape for your partner in 1995?', subtext: 'Think cassette tape, 90 minutes, Side A and Side B. Name at least three tracks.' },
+  { id: 'nos-90-02', type: 'nostalgia' as const, era: '90s', yearRange: [1990, 1999] as [number,number], category: 'culture' as const, depth: 'surface' as const, content: 'Tamagotchi, Furby, or Skip-It — which were you, and which is your partner?', subtext: 'Explain your reasoning. This reveals character.' },
+  { id: 'nos-90-03', type: 'nostalgia' as const, era: '90s', yearRange: [1990, 1999] as [number,number], category: 'film' as const, depth: 'surface' as const, content: '"I'll never let go." Titanic 1997. Would you have let go?', subtext: 'There was clearly room on that door. Who's getting on the door and who's in the water? Be honest.' },
+  { id: 'nos-90-04', type: 'nostalgia' as const, era: '90s', yearRange: [1990, 1999] as [number,number], category: 'music' as const, depth: 'surface' as const, content: 'NSYNC vs Backstreet Boys — and what does your answer say about you?', subtext: "Everyone had an opinion. Don't try to dodge it in 2026." },
+  { id: 'nos-90-05', type: 'nostalgia' as const, era: '90s', yearRange: [1990, 1999] as [number,number], category: 'daily' as const, depth: 'surface' as const, content: 'Before GPS, how would you two have found a new restaurant together?', subtext: 'Mapquest printout? Calling directory assistance? Getting hopelessly lost and pretending it was intentional?' },
+  { id: 'nos-90-06', type: 'nostalgia' as const, era: '90s', yearRange: [1990, 1999] as [number,number], category: 'tech' as const, depth: 'surface' as const, content: 'AIM screen name era. What would each of your screen names have been?', subtext: "xoBeautifulDreamer99 or DarkStarGamer? Bonus: write each other's away message." },
+
+  // 2000s
+  { id: 'nos-00-01', type: 'nostalgia' as const, era: '2000s', yearRange: [2000, 2009] as [number,number], category: 'tech' as const, depth: 'surface' as const, content: 'What song was your MySpace profile playing, and what does your partner think that says about you?', subtext: 'Your "Top 8" and your profile song were the original personality test.' },
+  { id: 'nos-00-02', type: 'nostalgia' as const, era: '2000s', yearRange: [2000, 2009] as [number,number], category: 'culture' as const, depth: 'surface' as const, content: "If your relationship had started on MSN Messenger, write your partner one message using only that era's slang.", subtext: 'ASL? BRB. WYD l8r? The pressure is on.' },
+  { id: 'nos-00-03', type: 'nostalgia' as const, era: '2000s', yearRange: [2000, 2009] as [number,number], category: 'daily' as const, depth: 'surface' as const, content: 'iPod classic. You can only put 1,000 songs on it. What percentage would be songs about your partner?', subtext: "And are those songs they'd be touched by — or embarrassed by?" },
+  { id: 'nos-00-04', type: 'nostalgia' as const, era: '2000s', yearRange: [2000, 2009] as [number,number], category: 'film' as const, depth: 'surface' as const, content: 'The rom-com formula: meet cute, conflict, airport run, grand gesture. Walk through ours using that format.', subtext: "Even if your actual story was nothing like that. Make it work." },
+  { id: 'nos-00-05', type: 'nostalgia' as const, era: '2000s', yearRange: [2000, 2009] as [number,number], category: 'tech' as const, depth: 'surface' as const, content: "Y2K never happened. But what relationship fear from your early years also never materialized?", subtext: "Something you were sure would destroy things — but didn't." },
+  { id: 'nos-00-06', type: 'nostalgia' as const, era: '2000s', yearRange: [2000, 2009] as [number,number], category: 'music' as const, depth: 'surface' as const, content: "Auto-Tune era. Which overly-produced, embarrassingly sincere 2000s song actually perfectly captures a moment in your relationship?", subtext: "Don't reach for the cool answer. Find the real one." },
+
+  // 2010s
+  { id: 'nos-10-01', type: 'nostalgia' as const, era: '2010s', yearRange: [2010, 2019] as [number,number], category: 'tech' as const, depth: 'surface' as const, content: 'Show your partner the oldest Instagram photo of you that still exists. What does it say about who you were then?', subtext: "And does your partner think that person is better or worse than who you are now?" },
+  { id: 'nos-10-02', type: 'nostalgia' as const, era: '2010s', yearRange: [2010, 2019] as [number,number], category: 'culture' as const, depth: 'surface' as const, content: "Netflix and chill — but actually. What was the first thing you watched together that you knew was real?", subtext: "Not the euphemism. The actual moment sitting on the couch, when comfort set in." },
+  { id: 'nos-10-03', type: 'nostalgia' as const, era: '2010s', yearRange: [2010, 2019] as [number,number], category: 'tech' as const, depth: 'surface' as const, content: "Read your partner your first ever text to them. Or the text you almost sent but deleted.", subtext: "We know you scrolled back there at some point." },
+  { id: 'nos-10-04', type: 'nostalgia' as const, era: '2010s', yearRange: [2010, 2019] as [number,number], category: 'music' as const, depth: 'surface' as const, content: "What was the song Shazam identified the night something shifted between you two?", subtext: "Every couple has one. What was playing?" },
+  { id: 'nos-10-05', type: 'nostalgia' as const, era: '2010s', yearRange: [2010, 2019] as [number,number], category: 'daily' as const, depth: 'surface' as const, content: "Snapchat streaks were serious in 2014. What thing in your relationship do you protect with that same energy right now?", subtext: "Not a physical thing. A ritual, a habit, a moment." },
+  { id: 'nos-10-06', type: 'nostalgia' as const, era: '2010s', yearRange: [2010, 2019] as [number,number], category: 'culture' as const, depth: 'current' as const, content: '"We need to talk." — When in your relationship did that text send a different level of fear than it does now?', subtext: "How has your relationship's baseline security changed since the beginning?" },
+
+  // 2020s
+  { id: 'nos-20-01', type: 'nostalgia' as const, era: '2020s', yearRange: [2020, 2029] as [number,number], category: 'daily' as const, depth: 'surface' as const, content: "Lockdown 2020. If you were locked down together — what habit from that time do you still secretly miss?", subtext: "If you weren't together yet — where were you, and did you know this person existed yet?" },
+  { id: 'nos-20-02', type: 'nostalgia' as const, era: '2020s', yearRange: [2020, 2029] as [number,number], category: 'tech' as const, depth: 'surface' as const, content: "Wordle, BeReal, TikTok spirals at midnight. Which digital thing of the early 2020s best describes a phase your relationship went through?", subtext: "A Wordle streak of success? Or a 3am doom scroll phase where you both kind of checked out?" },
+  { id: 'nos-20-03', type: 'nostalgia' as const, era: '2020s', yearRange: [2020, 2029] as [number,number], category: 'culture' as const, depth: 'surface' as const, content: '"That girl / that guy era." Were you in your main character era when you met your partner — or were they the reason you entered it?' },
+
+  // Anniversary-era
+  { id: 'nos-ann-01', type: 'nostalgia' as const, era: 'anniversary', yearRange: [1970, 2030] as [number,number], category: 'culture' as const, depth: 'surface' as const, content: "What was #1 on the charts the week you got together?", subtext: "Look it up right now. Play 10 seconds. Does it fit, or is it embarrassingly wrong?" },
+  { id: 'nos-ann-02', type: 'nostalgia' as const, era: 'anniversary', yearRange: [1970, 2030] as [number,number], category: 'film' as const, depth: 'surface' as const, content: "What was the biggest movie of the year you first met? Did you see it together?", subtext: "If not, is it on your watchlist now?" },
+  { id: 'nos-ann-03', type: 'nostalgia' as const, era: 'anniversary', yearRange: [1970, 2030] as [number,number], category: 'daily' as const, depth: 'surface' as const, content: "Describe the world the year you fell in love — in one sentence each. Then compare.", subtext: "What were people obsessed with? What felt scary? What felt possible?" },
+
+  // ══════════════════════════════════════════════════════════════
+  // MODERN ERA — 2024-2026 current-era cards
+  // ══════════════════════════════════════════════════════════════
+
+  { id: 'mod-01', type: 'this-or-that', depth: 'surface',
+    content: 'ChatGPT, Spotify Wrapped, or your partner — which one actually knows you best right now?',
+    options: ['The algorithm', 'My partner, no contest'] as [string, string] },
+
+  { id: 'mod-02', type: 'what-if', depth: 'surface',
+    content: "If your relationship was a Netflix series, what genre would it be — and has it been renewed for another season?",
+    subtext: 'Be honest about where you are in the story arc right now.' },
+
+  { id: 'mod-03', type: 'what-if', depth: 'current',
+    content: "Post-pandemic, what did you lose as a couple that you've never gotten back? What did you gain that you didn't expect?",
+    subtext: 'Name one of each. The loss first, then the unexpected gain.',
+    framework: 'Brené Brown: Named losses are grievable. Unnamed losses become resentment.' },
+
+  { id: 'mod-04', type: 'this-or-that', depth: 'surface',
+    content: "Which is actually more damaging to us right now?",
+    options: ['Doomscrolling alone at 11pm', 'Watching something mindless together'] as [string, string] },
+
+  { id: 'mod-05', type: 'what-if', depth: 'current',
+    content: "If an AI could tell you one true thing about your relationship that neither of you has been willing to say — what do you think it would be?",
+    subtext: "Don't dodge this. What's the thing you both already sense?",
+    framework: 'Gottman: The things couples avoid saying are usually the things that matter most.' },
+
+  { id: 'mod-06', type: 'this-or-that', depth: 'surface',
+    content: "Phone in another room during dinner together — where do we actually stand?",
+    options: ['Honestly, a real issue for us', 'Not actually a big deal'] as [string, string] },
+
+  { id: 'mod-07', type: 'what-if', depth: 'current',
+    content: "You both took a full week off all screens. What do you think you'd discover about each other in that silence?",
+    subtext: 'Would it feel like relief or discomfort? Who would adjust faster?' },
+
+  { id: 'mod-08', type: 'what-if', depth: 'surface',
+    content: "If your relationship had a Spotify Wrapped, what would be the most-played emotion of this past year?",
+    subtext: "One word for each of you. Then ask: is that the emotion you wanted, or the one that just happened?" },
+
+  { id: 'mod-09', type: 'this-or-that', depth: 'current',
+    content: "In the context of our life together, which AI-era fear is more real to you?",
+    options: ['Being replaced at work', 'Losing our ability to be present with each other'] as [string, string] },
+
+  { id: 'mod-10', type: 'what-if', depth: 'current',
+    content: "If your relationship had a comment section, what would the most upvoted comment say — and what would you actually want it to say?",
+    subtext: "The gap between those two answers is a conversation worth having.",
+    framework: 'Esther Perel: How others perceive your relationship shapes how you perceive it yourselves.' },
+
+  { id: 'mod-11', type: 'what-if', depth: 'surface',
+    content: "If you two started a podcast together, what would it actually be about? Not the polished version — the real one.",
+    subtext: 'The thing you actually talk about at 1am.' },
+
+  { id: 'mod-12', type: 'this-or-that', depth: 'surface',
+    content: "Remote work / WFH has made us:",
+    options: ['Closer — more time, more connection', 'More separate — less intentional about us time'] as [string, string] },
+
+  { id: 'mod-13', type: 'what-if', depth: 'current',
+    content: "The streaming wars are exhausting. If your relationship could only subscribe to one platform forever — which survives and what does that reveal about your shared values?",
+    subtext: 'Justify it. The answer is actually about priorities.' },
+
 ];
+
 
 // ──────────────────────────────────────────────────────────────────────────────
 // SESSION BUILDER — with type diversity guarantee
@@ -1146,6 +1253,7 @@ export const CARD_TYPE_LABELS: Record<Card['type'], string> = {
   thunder: 'Thunder',
   legacy: 'Legacy',
   repair: 'Repair',
+  nostalgia: '🕰️ Nostalgia',
 };
 
 export const CARD_TYPE_COLORS: Record<Card['type'], string> = {
@@ -1157,6 +1265,7 @@ export const CARD_TYPE_COLORS: Record<Card['type'], string> = {
   thunder: '#334155',
   legacy: '#7ec8a4',
   repair: '#a78bfa',
+  nostalgia: '#b45309',
 };
 
 export const CARD_TYPE_DESCRIPTIONS: Record<Card['type'], string> = {
@@ -1166,6 +1275,28 @@ export const CARD_TYPE_DESCRIPTIONS: Record<Card['type'], string> = {
   challenge: 'Beat the clock',
   spicy: 'Say it out loud',
   thunder: 'The card that changes something',
-  legacy: 'Honor what you\'ve built',
+  legacy: "Honor what you've built",
   repair: 'Come back to each other',
+  nostalgia: 'A moment from the era you shared',
 };
+
+/**
+ * Get nostalgia cards relevant to a couple's anniversary year.
+ * Prioritizes: anniversary-era cards first, then the era matching their year, then all others.
+ */
+export function getNostalgiaCardsForYear(anniversaryYear?: number): Card[] {
+  const year = anniversaryYear ?? new Date().getFullYear();
+  const nostalgiaCards = CARDS.filter(c => c.type === 'nostalgia');
+  const anniversaryCards = nostalgiaCards.filter(c => c.era === 'anniversary');
+  const eraCards = nostalgiaCards.filter(c =>
+    c.era !== 'anniversary' &&
+    c.yearRange !== undefined &&
+    c.yearRange[0] <= year &&
+    c.yearRange[1] >= year
+  );
+  const otherCards = nostalgiaCards.filter(c =>
+    c.era !== 'anniversary' &&
+    !(c.yearRange !== undefined && c.yearRange[0] <= year && c.yearRange[1] >= year)
+  );
+  return [...anniversaryCards, ...eraCards, ...otherCards];
+}
