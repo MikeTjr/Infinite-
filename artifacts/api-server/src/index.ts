@@ -19,7 +19,7 @@ const httpServer = createServer(app);
 attachSocketServer(httpServer);
 
 httpServer.listen(port, () => {
-  logger.info({ port }, "Server listening (HTTP + WebSocket)");
+  logger.info({ port }, "Infinite Us API + WebSocket listening");
 });
 
 httpServer.on("error", (err) => {
