@@ -1,4 +1,4 @@
-export type CardType = 'dare' | 'this-or-that' | 'what-if' | 'challenge' | 'spicy' | 'thunder' | 'legacy' | 'repair';
+export type CardType = 'dare' | 'this-or-that' | 'what-if' | 'challenge' | 'spicy' | 'thunder' | 'legacy' | 'repair' | 'nostalgia';
 export type CardDepth = 'surface' | 'current' | 'deep';
 
 export interface Card {
@@ -11,6 +11,9 @@ export interface Card {
   timerSeconds?: number;
   minSessions?: number;
   framework?: string;
+  era?: string;
+  yearRange?: [number, number];
+  category?: 'music' | 'culture' | 'tech' | 'film' | 'daily';
 }
 
 export interface AvatarSettings {
@@ -43,6 +46,7 @@ export interface CoupleProfile {
   avatar: AvatarSettings;
   createdAt: string;
   anniversaryDate?: string;
+  googleUserId?: string;
 }
 
 export interface SessionRecord {
@@ -143,4 +147,11 @@ export interface RoomState {
   stateJson: Record<string, unknown>;
   createdAt: string;
   expiresAt: string;
+}
+
+export interface GoogleUser {
+  sub: string;
+  name: string;
+  email: string;
+  picture?: string;
 }
