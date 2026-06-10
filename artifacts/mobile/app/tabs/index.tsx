@@ -1,10 +1,11 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Heart, TrendingUp, Zap, Brain, Camera, PlayCircle } from 'lucide-react-native';
+import { Heart, TrendingUp, Zap, Brain, Camera, PlayCircle, Wifi } from 'lucide-react-native';
 import { Colors, Radius, FontSize } from '../../constants/colors';
 import { useSecureStorage } from '../../hooks/useSecureStorage';
 import { useAuth } from '../../context/AuthContext';
 import { useDriftTracking } from '../../hooks/useDriftTracking';
+import { useRef, useCallback } from 'react';
 
 interface GrowthScore {
   total: number;
@@ -24,8 +25,22 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const { value: growthScore } = useSecureStorage<GrowthScore>('growth-score', DEFAULT_SCORE);
   const { avoidedTypes, insights } = useDriftTracking();
+  const adminTapCount = useRef(0);
+  const adminTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const momentum = MOMENTUM_LABELS[growthScore.momentum];
+
+  // Hidden admin access: tap the heart logo 7 times within 3 seconds
+  const handleLogoPress = useCallback(() => {
+    adminTapCount.current += 1;
+    if (adminTapTimer.current) clearTimeout(adminTapTimer.current);
+    if (adminTapCount.current >= 7) {
+      adminTapCount.current = 0;
+      router.push('/admin');
+      return;
+    }
+    adminTapTimer.current = setTimeout(() => { adminTapCount.current = 0; }, 3000);
+  }, []);
 
   const quickActions = [
     { label: 'Mirror', icon: <TrendingUp size={20} color={Colors.primary} />, href: '/mirror' as const },
@@ -37,9 +52,11 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>
-          {user?.coupleName ? `Welcome back, ${user.coupleName}` : 'Welcome to Infinite Us'}
-        </Text>
+        <TouchableOpacity onPress={handleLogoPress} activeOpacity={0.9} hitSlop={8}>
+          <Text style={styles.greeting}>
+            {user?.coupleName ? `Welcome back, ${user.coupleName}` : 'Welcome to Infinite Us'}
+          </Text>
+        </TouchableOpacity>
         <Text style={styles.subtext}>
           {user?.coupleName
             ? 'Your next moment is always within reach.'
@@ -71,10 +88,16 @@ export default function HomeScreen() {
         <Text style={styles.playButtonText}>Begin Session</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.demoButton} onPress={() => router.push('/demo')}>
-        <PlayCircle size={18} color={Colors.thisOrThat} />
-        <Text style={styles.demoButtonText}>Try 15-Question Demo</Text>
-      </TouchableOpacity>
+      <View style={styles.secondaryActions}>
+        <TouchableOpacity style={styles.demoButton} onPress={() => router.push('/demo')}>
+          <PlayCircle size={18} color={Colors.thisOrThat} />
+          <Text style={styles.demoButtonText}>15-Question Demo</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.liveButton} onPress={() => router.push('/room-lobby')}>
+          <Wifi size={18} color={Colors.repair} />
+          <Text style={styles.liveButtonText}>Live Sync</Text>
+        </TouchableOpacity>
+      </View>
 
       {avoidedTypes.length > 0 && (
         <View style={styles.intelligenceCard}>
@@ -138,7 +161,9 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   playButtonText: { color: '#fff', fontSize: FontSize.lg, fontWeight: '700' },
+  secondaryActions: { flexDirection: 'row', gap: 12 },
   demoButton: {
+    flex: 1,
     backgroundColor: Colors.surface,
     borderRadius: Radius.full,
     paddingVertical: 14,
@@ -150,6 +175,19 @@ const styles = StyleSheet.create({
     borderColor: Colors.thisOrThat + '50',
   },
   demoButtonText: { color: Colors.thisOrThat, fontSize: FontSize.sm, fontWeight: '600' },
+  liveButton: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.full,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: Colors.repair + '50',
+  },
+  liveButtonText: { color: Colors.repair, fontSize: FontSize.sm, fontWeight: '600' },
   intelligenceCard: {
     backgroundColor: Colors.repair + '12',
     borderRadius: Radius.xl,

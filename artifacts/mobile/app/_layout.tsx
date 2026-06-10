@@ -18,9 +18,7 @@ const queryClient = new QueryClient({
 
 function RootNavigator() {
   const { user, loading } = useAuth();
-
   if (loading) return null;
-
   return (
     <Stack
       screenOptions={{
@@ -34,7 +32,11 @@ function RootNavigator() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="game" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
           <Stack.Screen name="demo" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="room-lobby" options={{ headerShown: false }} />
+          <Stack.Screen name="live-game" options={{ headerShown: false }} />
+          <Stack.Screen name="live-finish" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
           <Stack.Screen name="blend-screen" options={{ title: 'Two Become One', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="admin" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </>
       ) : (
@@ -46,13 +48,8 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const [loaded] = useFonts({});
-
-  useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
-
+  useEffect(() => { if (loaded) SplashScreen.hideAsync(); }, [loaded]);
   if (!loaded) return null;
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

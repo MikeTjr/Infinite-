@@ -35,7 +35,7 @@ interface ActiveSession {
 
 const PROGRESS_EXPIRY_HOURS = 24;
 
-const SESSION_CARDS: GameCard[] = [
+export const SESSION_CARDS: GameCard[] = [
   { id: 'g-01', type: 'thisOrThat', prompt: 'Would you rather…', optionA: 'Wake up together every morning', optionB: 'Have your own separate morning routines', },
   { id: 'g-02', type: 'legacy', prompt: 'What was the moment you first knew this relationship was different?', subtext: 'Take turns. No rushing.' },
   { id: 'g-03', type: 'dare', prompt: 'Delete one app from your phone that your partner chooses.', subtext: 'Show them your home screen. They pick.' },

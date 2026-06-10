@@ -1,14 +1,18 @@
 import { Router } from "express";
 import OpenAI from "openai";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { blendRateLimiter } from "../middlewares/rateLimit";
 import { validateImagePayload } from "../middlewares/security";
 
 const router = Router();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy-initialize so the server starts even without the key configured.
+// Requests will fail gracefully if the key is absent.
+function getOpenAI(): OpenAI {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error("OPENAI_API_KEY is not configured on this server.");
+  return new OpenAI({ apiKey: key });
+}
 
 const BlendBody = z.object({
   photo1: z.string().min(1),
@@ -41,6 +45,7 @@ router.post("/blend", blendRateLimiter, async (req, res) => {
   try {
     // Step 1: Use GPT-4o Vision to describe both people's appearance.
     // This replaces the slow gpt-image-1 multi-image edit approach.
+    const openai = getOpenAI();
     const visionResponse = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
