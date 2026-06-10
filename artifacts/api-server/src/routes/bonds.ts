@@ -35,6 +35,18 @@ const JoinBondBody = z.object({
   score: z.number().int().nonnegative().default(0),
 });
 
+function formatBond(bond: BondEntry) {
+  return {
+    id: bond.id,
+    name: bond.name,
+    code: bond.code,
+    createdAt: bond.createdAt,
+    memberCount: bond.members.length,
+    memberNames: bond.members.map((m) => m.coupleName),
+    collectiveScore: bond.members.reduce((sum, m) => sum + m.score, 0),
+  };
+}
+
 router.post("/bonds", (req, res) => {
   const parsed = CreateBondBody.safeParse(req.body);
   if (!parsed.success) {
@@ -58,14 +70,12 @@ router.post("/bonds", (req, res) => {
     name: parsed.data.name,
     code,
     createdAt: new Date().toISOString(),
-    members: [
-      {
-        coupleId: parsed.data.coupleId,
-        coupleName: parsed.data.coupleName,
-        score: parsed.data.score,
-        joinedAt: new Date().toISOString(),
-      },
-    ],
+    members: [{
+      coupleId: parsed.data.coupleId,
+      coupleName: parsed.data.coupleName,
+      score: parsed.data.score,
+      joinedAt: new Date().toISOString(),
+    }],
   };
 
   bonds.set(bond.id, bond);
@@ -73,9 +83,7 @@ router.post("/bonds", (req, res) => {
 });
 
 router.get("/bonds/:code", (req, res) => {
-  const bond = [...bonds.values()].find(
-    (b) => b.code === req.params.code.toUpperCase()
-  );
+  const bond = [...bonds.values()].find((b) => b.code === req.params.code.toUpperCase());
   if (!bond) {
     res.status(404).json({ error: "Bond not found" });
     return;
@@ -84,9 +92,7 @@ router.get("/bonds/:code", (req, res) => {
 });
 
 router.post("/bonds/:code/join", (req, res) => {
-  const bond = [...bonds.values()].find(
-    (b) => b.code === req.params.code.toUpperCase()
-  );
+  const bond = [...bonds.values()].find((b) => b.code === req.params.code.toUpperCase());
   if (!bond) {
     res.status(404).json({ error: "Bond not found" });
     return;
@@ -112,16 +118,14 @@ router.post("/bonds/:code/join", (req, res) => {
 });
 
 router.get("/bonds/:code/leaderboard", (req, res) => {
-  const bond = [...bonds.values()].find(
-    (b) => b.code === req.params.code.toUpperCase()
-  );
+  const bond = [...bonds.values()].find((b) => b.code === req.params.code.toUpperCase());
   if (!bond) {
     res.status(404).json({ error: "Bond not found" });
     return;
   }
 
   const leaderboard = bond.members
-    .map((m, i) => ({ rank: i + 1, name: m.coupleName, score: m.score, coupleId: m.coupleId }))
+    .map((m) => ({ name: m.coupleName, score: m.score, coupleId: m.coupleId }))
     .sort((a, b) => b.score - a.score)
     .map((entry, i) => ({ ...entry, rank: i + 1 }));
 
@@ -129,9 +133,7 @@ router.get("/bonds/:code/leaderboard", (req, res) => {
 });
 
 router.patch("/bonds/:code/score", (req, res) => {
-  const bond = [...bonds.values()].find(
-    (b) => b.code === req.params.code.toUpperCase()
-  );
+  const bond = [...bonds.values()].find((b) => b.code === req.params.code.toUpperCase());
   if (!bond) {
     res.status(404).json({ error: "Bond not found" });
     return;
@@ -143,17 +145,5 @@ router.patch("/bonds/:code/score", (req, res) => {
 
   res.json(formatBond(bond));
 });
-
-function formatBond(bond: BondEntry) {
-  return {
-    id: bond.id,
-    name: bond.name,
-    code: bond.code,
-    createdAt: bond.createdAt,
-    memberCount: bond.members.length,
-    memberNames: bond.members.map((m) => m.coupleName),
-    collectiveScore: bond.members.reduce((sum, m) => sum + m.score, 0),
-  };
-}
 
 export default router;
