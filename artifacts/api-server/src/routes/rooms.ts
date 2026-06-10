@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod/v4";
-import { getRoomSize } from "../websocket";
+import { getRoomSize } from "../lib/socketServer";
 
 const router = Router();
 
