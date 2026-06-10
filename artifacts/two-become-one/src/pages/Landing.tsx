@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useLocation } from 'wouter';
-import { motion } from 'framer-motion';
-import { Heart, Sparkles, Shield, BarChart2, BookOpen, Users } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, Sparkles, Shield, BarChart2, BookOpen, Users, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { AppState } from '../lib/types';
 
@@ -18,8 +18,47 @@ const features = [
   { icon: Users, title: 'Bonds', desc: 'Small groups of couples who grow and compete together.' },
 ];
 
+const API_BASE = import.meta.env.BASE_URL?.replace(/\/$/, '') || '';
+
 export default function Landing({ state }: LandingProps) {
   const [, navigate] = useLocation();
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [passphrase, setPassphrase] = useState('');
+  const [adminStatus, setAdminStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+
+  const handleTitleTap = () => {
+    tapCount.current += 1;
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 3000);
+    if (tapCount.current >= 7) {
+      tapCount.current = 0;
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+      setShowAdmin(true);
+      setPassphrase('');
+      setAdminStatus('idle');
+    }
+  };
+
+  const handleAdminVerify = async () => {
+    if (!passphrase.trim()) return;
+    setAdminStatus('loading');
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passphrase }),
+      });
+      if (!res.ok) throw new Error('Unauthorized');
+      const data = await res.json() as { token: string };
+      setAdminToken(data.token);
+      setAdminStatus('success');
+    } catch {
+      setAdminStatus('error');
+    }
+  };
 
   return (
     <div className="min-h-[100dvh] flex flex-col overflow-x-hidden">
@@ -42,7 +81,10 @@ export default function Landing({ state }: LandingProps) {
           </motion.div>
 
           <div>
-            <h1 className="text-5xl md:text-6xl font-serif font-bold text-foreground tracking-tight leading-tight">
+            <h1
+              onClick={handleTitleTap}
+              className="text-5xl md:text-6xl font-serif font-bold text-foreground tracking-tight leading-tight select-none cursor-default"
+            >
               Infinite Us
             </h1>
             <p className="mt-3 text-lg text-muted-foreground font-light italic">
@@ -106,6 +148,63 @@ export default function Landing({ state }: LandingProps) {
           <p className="text-xs text-muted-foreground/60">No ads. No data selling. Built for the long haul.</p>
         </motion.div>
       </main>
+
+      {/* Hidden admin modal — triggered by 7 taps on title */}
+      <AnimatePresence>
+        {showAdmin && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowAdmin(false); }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card rounded-2xl border border-border shadow-2xl p-6 w-full max-w-sm space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="font-serif text-lg text-foreground">Admin Access</h2>
+                <button onClick={() => setShowAdmin(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {adminStatus === 'success' ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-green-600 dark:text-green-400">Access granted.</p>
+                  <p className="text-xs text-muted-foreground font-mono break-all">{adminToken}</p>
+                  <Button className="w-full" onClick={() => setShowAdmin(false)}>Done</Button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="password"
+                    value={passphrase}
+                    onChange={e => setPassphrase(e.target.value)}
+                    placeholder="Passphrase"
+                    autoFocus
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    onKeyDown={e => e.key === 'Enter' && handleAdminVerify()}
+                  />
+                  {adminStatus === 'error' && (
+                    <p className="text-xs text-destructive">Incorrect passphrase.</p>
+                  )}
+                  <Button
+                    className="w-full"
+                    disabled={!passphrase.trim() || adminStatus === 'loading'}
+                    onClick={handleAdminVerify}
+                  >
+                    {adminStatus === 'loading' ? 'Verifying...' : 'Verify'}
+                  </Button>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
