@@ -1,6 +1,7 @@
-import { AppState, GrowthScore } from './types';
+import { AppState, GrowthScore, GoogleUser } from './types';
 
 const STORAGE_KEY = 'infinite-us-state';
+const GOOGLE_USER_KEY = 'infinite-user';
 
 export const DEFAULT_STATE: AppState = {
   couple: null,
@@ -78,4 +79,28 @@ export function computeStreak(sessions: AppState['sessions']): number {
     }
   }
   return streak;
+}
+
+// ─── Google User Persistence ──────────────────────────────────────────────────
+
+export function saveGoogleUser(user: GoogleUser): void {
+  try {
+    localStorage.setItem(GOOGLE_USER_KEY, JSON.stringify(user));
+  } catch {
+    console.error('Failed to save Google user');
+  }
+}
+
+export function loadGoogleUser(): GoogleUser | null {
+  try {
+    const raw = localStorage.getItem(GOOGLE_USER_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as GoogleUser;
+  } catch {
+    return null;
+  }
+}
+
+export function clearGoogleUser(): void {
+  localStorage.removeItem(GOOGLE_USER_KEY);
 }
