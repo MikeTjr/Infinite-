@@ -16,6 +16,7 @@ import Journey from './pages/Journey';
 import Bonds from './pages/Bonds';
 import Leaderboard from './pages/Leaderboard';
 import TwoBecomOne from './pages/TwoBecomOne';
+import TvViewer from './pages/TvViewer';
 import NotFound from './pages/not-found';
 
 const queryClient = new QueryClient();
@@ -63,6 +64,12 @@ function AppRoutes() {
       </Route>
       <Route path="/blend">
         <TwoBecomOne />
+      </Route>
+      <Route path="/watch/:code">
+        {(params) => <TvViewer code={params.code} />}
+      </Route>
+      <Route path="/watch">
+        <TvViewer />
       </Route>
       <Route path="/setup">
         <Setup onComplete={handleSetCouple} />
