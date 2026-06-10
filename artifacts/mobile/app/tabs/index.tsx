@@ -1,8 +1,10 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
-import { Heart, TrendingUp, Zap } from 'lucide-react-native';
+import { Link, router } from 'expo-router';
+import { Heart, TrendingUp, Zap, Brain, Camera, PlayCircle } from 'lucide-react-native';
 import { Colors, Radius, FontSize } from '../../constants/colors';
 import { useSecureStorage } from '../../hooks/useSecureStorage';
+import { useAuth } from '../../context/AuthContext';
+import { useDriftTracking } from '../../hooks/useDriftTracking';
 
 interface GrowthScore {
   total: number;
@@ -19,19 +21,27 @@ const MOMENTUM_LABELS = {
 };
 
 export default function HomeScreen() {
+  const { user } = useAuth();
   const { value: growthScore } = useSecureStorage<GrowthScore>('growth-score', DEFAULT_SCORE);
-  const { value: coupleName } = useSecureStorage<string>('couple-name', '');
+  const { avoidedTypes, insights } = useDriftTracking();
 
   const momentum = MOMENTUM_LABELS[growthScore.momentum];
+
+  const quickActions = [
+    { label: 'Mirror', icon: <TrendingUp size={20} color={Colors.primary} />, href: '/mirror' as const },
+    { label: 'Journey', icon: <Zap size={20} color={Colors.thisOrThat} />, href: '/journey' as const },
+    { label: 'Archive', icon: <Heart size={20} color={Colors.legacy} />, href: '/archive' as const },
+    { label: 'Two Become One', icon: <Camera size={20} color={Colors.spicy} />, href: '/blend-screen' as const },
+  ];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.greeting}>
-          {coupleName ? `Welcome back, ${coupleName}` : 'Welcome to Infinite Us'}
+          {user?.coupleName ? `Welcome back, ${user.coupleName}` : 'Welcome to Infinite Us'}
         </Text>
         <Text style={styles.subtext}>
-          {coupleName
+          {user?.coupleName
             ? 'Your next moment is always within reach.'
             : 'The relationship platform for couples.'}
         </Text>
@@ -56,22 +66,32 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <Link href="/play" asChild>
-        <TouchableOpacity style={styles.playButton}>
-          <Heart size={22} color="#fff" fill="#fff" />
-          <Text style={styles.playButtonText}>Begin Session</Text>
-        </TouchableOpacity>
-      </Link>
+      <TouchableOpacity style={styles.playButton} onPress={() => router.push('/game')}>
+        <Heart size={22} color="#fff" fill="#fff" />
+        <Text style={styles.playButtonText}>Begin Session</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.demoButton} onPress={() => router.push('/demo')}>
+        <PlayCircle size={18} color={Colors.thisOrThat} />
+        <Text style={styles.demoButtonText}>Try 15-Question Demo</Text>
+      </TouchableOpacity>
+
+      {avoidedTypes.length > 0 && (
+        <View style={styles.intelligenceCard}>
+          <View style={styles.intelligenceHeader}>
+            <Brain size={16} color={Colors.repair} />
+            <Text style={styles.intelligenceTitle}>Card Intelligence</Text>
+          </View>
+          {insights.slice(0, 2).map((insight, i) => (
+            <Text key={i} style={styles.insightText}>• {insight}</Text>
+          ))}
+        </View>
+      )}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionGrid}>
-          {[
-            { label: 'Mirror', icon: <TrendingUp size={20} color={Colors.primary} />, href: '/mirror' },
-            { label: 'Journey', icon: <Zap size={20} color={Colors.thisOrThat} />, href: '/journey' },
-            { label: 'Archive', icon: <Heart size={20} color={Colors.legacy} />, href: '/archive' },
-            { label: 'Two Become One', icon: <Heart size={20} color={Colors.spicy} />, href: '/blend' },
-          ].map(({ label, icon, href }) => (
+          {quickActions.map(({ label, icon, href }) => (
             <Link key={label} href={href} asChild>
               <TouchableOpacity style={styles.actionCard}>
                 {icon}
@@ -81,27 +101,20 @@ export default function HomeScreen() {
           ))}
         </View>
       </View>
-
-      <View style={styles.notice}>
-        <Text style={styles.noticeText}>
-          State syncs to this device via secure storage. Cross-device sync requires a live session room.
-        </Text>
-      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 20, paddingBottom: 40 },
-  header: { marginBottom: 24 },
-  greeting: { fontSize: FontSize['2xl'], fontWeight: '700', color: Colors.text, marginBottom: 4 },
+  content: { padding: 20, paddingBottom: 40, gap: 16 },
+  header: { gap: 4 },
+  greeting: { fontSize: FontSize['2xl'], fontWeight: '700', color: Colors.text },
   subtext: { fontSize: FontSize.sm, color: Colors.textMuted },
   scoreCard: {
     backgroundColor: Colors.card,
     borderRadius: Radius.xl,
     padding: 20,
-    marginBottom: 20,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -118,7 +131,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    marginBottom: 28,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -126,8 +138,36 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   playButtonText: { color: '#fff', fontSize: FontSize.lg, fontWeight: '700' },
-  section: { marginBottom: 24 },
-  sectionTitle: { fontSize: FontSize.sm, color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
+  demoButton: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.full,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: Colors.thisOrThat + '50',
+  },
+  demoButtonText: { color: Colors.thisOrThat, fontSize: FontSize.sm, fontWeight: '600' },
+  intelligenceCard: {
+    backgroundColor: Colors.repair + '12',
+    borderRadius: Radius.xl,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.repair + '40',
+    gap: 8,
+  },
+  intelligenceHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  intelligenceTitle: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.repair },
+  insightText: { fontSize: FontSize.xs, color: Colors.textMuted, lineHeight: 18 },
+  section: { gap: 12 },
+  sectionTitle: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
   actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   actionCard: {
     width: '47%',
@@ -139,12 +179,4 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionLabel: { fontSize: FontSize.sm, color: Colors.text, fontWeight: '600' },
-  notice: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  noticeText: { fontSize: FontSize.xs, color: Colors.textMuted, lineHeight: 18 },
 });

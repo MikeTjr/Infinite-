@@ -1,8 +1,8 @@
-import { View, Text, ScrollView, StyleSheet, FlatList } from 'react-native';
-import { Calendar, Clock, Heart } from 'lucide-react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { Calendar, Clock, Heart, ChevronLeft } from 'lucide-react-native';
 import { Colors, Radius, FontSize } from '../../constants/colors';
 import { useSecureStorage } from '../../hooks/useSecureStorage';
-import { format } from 'date-fns';
+import { router } from 'expo-router';
 
 interface SessionRecord {
   id: string;
@@ -15,6 +15,15 @@ interface SessionRecord {
   cardTypes: string[];
 }
 
+function formatDate(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+}
+
 export default function ArchiveScreen() {
   const { value: sessions } = useSecureStorage<SessionRecord[]>('sessions', []);
   const sorted = [...sessions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -24,7 +33,12 @@ export default function ArchiveScreen() {
       <View style={styles.empty}>
         <Heart size={48} color={Colors.primary} />
         <Text style={styles.emptyTitle}>No sessions yet</Text>
-        <Text style={styles.emptyText}>Your session archive will appear here after your first play.</Text>
+        <Text style={styles.emptyText}>
+          Complete your first play session and it will appear here.
+        </Text>
+        <TouchableOpacity style={styles.emptyAction} onPress={() => router.push('/game')}>
+          <Text style={styles.emptyActionText}>Start a Session</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -40,10 +54,8 @@ export default function ArchiveScreen() {
           <View style={styles.cardHeader}>
             <View style={styles.cardMeta}>
               <Calendar size={13} color={Colors.textMuted} />
-              <Text style={styles.cardDate}>{format(new Date(item.date), 'MMM d, yyyy')}</Text>
-              {item.moodEmoji && (
-                <Text style={styles.emoji}>{item.moodEmoji}</Text>
-              )}
+              <Text style={styles.cardDate}>{formatDate(item.date)}</Text>
+              {item.moodEmoji && <Text style={styles.emoji}>{item.moodEmoji}</Text>}
             </View>
             <Text style={styles.score}>+{item.scoreEarned} pts</Text>
           </View>
@@ -79,9 +91,24 @@ export default function ArchiveScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   list: { padding: 16, paddingBottom: 40, gap: 12 },
-  empty: { flex: 1, backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
+  empty: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    gap: 12,
+  },
   emptyTitle: { fontSize: FontSize.xl, fontWeight: '700', color: Colors.text },
   emptyText: { fontSize: FontSize.sm, color: Colors.textMuted, textAlign: 'center', lineHeight: 20 },
+  emptyAction: {
+    backgroundColor: Colors.primary,
+    borderRadius: Radius.full,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    marginTop: 8,
+  },
+  emptyActionText: { color: '#fff', fontSize: FontSize.sm, fontWeight: '700' },
   card: {
     backgroundColor: Colors.card,
     borderRadius: Radius.xl,

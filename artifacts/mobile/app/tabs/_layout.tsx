@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Heart, BarChart2, BookOpen, Users } from 'lucide-react-native';
+import { Heart, BookOpen, Users, User, Gamepad2 } from 'lucide-react-native';
 import { Colors } from '../../constants/colors';
 
 export default function TabLayout() {
@@ -30,8 +30,8 @@ export default function TabLayout() {
         name="play"
         options={{
           title: 'Play',
-          tabBarIcon: ({ color }) => <Heart size={22} color={color} fill={color} />,
-          headerTitle: 'Play Session',
+          tabBarIcon: ({ color }) => <Gamepad2 size={22} color={color} />,
+          headerTitle: 'Play',
         }}
       />
       <Tabs.Screen
@@ -48,6 +48,14 @@ export default function TabLayout() {
           title: 'Bonds',
           tabBarIcon: ({ color }) => <Users size={22} color={color} />,
           headerTitle: 'Bonds',
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <User size={22} color={color} />,
+          headerTitle: 'Profile',
         }}
       />
     </Tabs>

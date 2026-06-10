@@ -1,53 +1,28 @@
 import { Request, Response, NextFunction } from "express";
 
-interface RateLimitStore {
-  [key: string]: { count: number; resetAt: number };
-}
+const requestCounts = new Map<string, { count: number; resetAt: number }>();
 
-const store: RateLimitStore = {};
-
-function createRateLimiter(options: {
-  windowMs: number;
-  max: number;
-  message?: string;
-}) {
+function createRateLimiter(windowMs: number, max: number) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const key = req.ip ?? "unknown";
+    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ?? req.ip ?? "unknown";
     const now = Date.now();
-    const entry = store[key];
+    const entry = requestCounts.get(ip);
 
     if (!entry || now > entry.resetAt) {
-      store[key] = { count: 1, resetAt: now + options.windowMs };
+      requestCounts.set(ip, { count: 1, resetAt: now + windowMs });
       next();
       return;
     }
 
-    if (entry.count >= options.max) {
-      res.status(429).json({
-        error: options.message ?? "Too many requests — please slow down.",
-      });
+    if (entry.count >= max) {
+      res.status(429).json({ error: "Too many requests — please wait before trying again." });
       return;
     }
 
-    entry.count++;
+    entry.count += 1;
     next();
   };
 }
 
-export const blendRateLimiter = createRateLimiter({
-  windowMs: 60_000,
-  max: 3,
-  message: "Too many blend requests — try again in a minute.",
-});
-
-export const apiRateLimiter = createRateLimiter({
-  windowMs: 60_000,
-  max: 120,
-  message: "Too many requests — slow down.",
-});
-
-export const authRateLimiter = createRateLimiter({
-  windowMs: 15 * 60_000,
-  max: 20,
-  message: "Too many authentication attempts.",
-});
+export const blendRateLimiter = createRateLimiter(60 * 1000, 5);
+export const defaultRateLimiter = createRateLimiter(60 * 1000, 60);

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import OpenAI from "openai";
-import { BlendPhotosBody } from "@workspace/api-zod";
+import { z } from "zod/v4";
 import { blendRateLimiter } from "../middlewares/rateLimit";
 import { validateImagePayload } from "../middlewares/security";
 
@@ -10,14 +10,27 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const BlendBody = z.object({
+  photo1: z.string().min(1),
+  photo2: z.string().min(1),
+  style: z.enum(["cartoon", "watercolor", "anime", "painterly"]).optional().default("cartoon"),
+});
+
+const styleDescriptions: Record<string, string> = {
+  cartoon: "a vibrant cartoon illustration style, bold outlines, bright colors, expressive and playful",
+  watercolor: "a soft watercolor painting style, translucent washes of color, gentle edges, romantic and dreamy",
+  anime: "a detailed anime illustration style, large expressive eyes, dynamic shading, clean lines",
+  painterly: "an impressionist oil painting style, visible brushstrokes, rich saturated colors, artistic and timeless",
+};
+
 router.post("/blend", blendRateLimiter, async (req, res) => {
-  const parsed = BlendPhotosBody.safeParse(req.body);
+  const parsed = BlendBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid request body" });
     return;
   }
 
-  const { photo1, photo2, style = "cartoon" } = parsed.data;
+  const { photo1, photo2, style } = parsed.data;
 
   const validation = validateImagePayload([photo1, photo2]);
   if (!validation.valid) {
@@ -25,56 +38,61 @@ router.post("/blend", blendRateLimiter, async (req, res) => {
     return;
   }
 
-  const styleDescriptions: Record<string, string> = {
-    cartoon: "a vibrant cartoon illustration style, bold outlines, bright colors, expressive and playful",
-    watercolor: "a soft watercolor painting style, translucent washes of color, gentle edges, romantic and dreamy",
-    anime: "a detailed anime illustration style, large expressive eyes, dynamic shading, clean lines",
-    painterly: "an impressionist oil painting style, visible brushstrokes, rich saturated colors, artistic and timeless",
-  };
-
-  const styleDesc = styleDescriptions[style] ?? styleDescriptions.cartoon;
-
   try {
-    const base64ToBuffer = (dataUrl: string): Buffer => {
-      const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, "");
-      return Buffer.from(base64, "base64");
-    };
-
-    const toFile = async (dataUrl: string, name: string) => {
-      const buf = base64ToBuffer(dataUrl);
-      const mimeMatch = dataUrl.match(/^data:(image\/\w+);base64,/);
-      const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
-      return new File([buf], name, { type: mime });
-    };
-
-    const file1 = await toFile(photo1, "person1.jpg");
-    const file2 = await toFile(photo2, "person2.jpg");
-
-    const prompt = `Create a unified portrait of two people becoming one, depicted in ${styleDesc}. 
-Blend the facial features, skin tones, and expressions of both people harmoniously into a single symbolic portrait that represents their union. 
-The result should feel like a beautiful, celebratory artwork symbolizing two souls becoming one — romantic, warm, and full of love. 
-Use rich colors appropriate to the ${style} style. The image should be square format, centered composition.`;
-
-    const response = await openai.images.edit({
-      model: "gpt-image-1",
-      image: [file1, file2],
-      prompt,
-      size: "1024x1024",
+    // Step 1: Use GPT-4o Vision to describe both people's appearance.
+    // This replaces the slow gpt-image-1 multi-image edit approach.
+    const visionResponse = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `You are an expert portrait artist. Describe the two people in these photos in precise visual terms for creating a stylized couple portrait. Include: facial structure, skin tone, hair color and style, eye color, notable features, and general expression. Be concise but vivid. Format as: "Person 1: [description]. Person 2: [description]."`,
+            },
+            {
+              type: "image_url",
+              image_url: { url: photo1, detail: "low" },
+            },
+            {
+              type: "image_url",
+              image_url: { url: photo2, detail: "low" },
+            },
+          ],
+        },
+      ],
+      max_tokens: 400,
     });
 
-    const imageData = response.data?.[0];
-    if (!imageData) {
-      res.status(500).json({ error: "No image returned from AI" });
+    const description = visionResponse.choices[0]?.message?.content ?? "";
+
+    if (!description) {
+      res.status(500).json({ error: "Could not analyze the provided photos. Please try with clearer images." });
       return;
     }
 
-    let imageUrl: string;
-    if (imageData.b64_json) {
-      imageUrl = `data:image/png;base64,${imageData.b64_json}`;
-    } else if (imageData.url) {
-      imageUrl = imageData.url;
-    } else {
-      res.status(500).json({ error: "Unexpected image format from AI" });
+    // Step 2: Generate the blended couple portrait with DALL-E 3.
+    // DALL-E 3 is significantly faster than gpt-image-1 with multi-image edit.
+    const styleDesc = styleDescriptions[style] ?? styleDescriptions.cartoon;
+
+    const imagePrompt = `Create a beautiful symbolic couple portrait in ${styleDesc}. 
+
+${description}
+
+Compose a single unified artistic image that lovingly represents both individuals together — their features blended harmoniously, facing each other or side by side in a romantic pose. The image should feel celebratory and intimate, symbolizing two souls united. Use rich, warm colors appropriate to the ${style} art style. Square format, centered composition, no text or labels.`;
+
+    const imageResponse = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: imagePrompt,
+      size: "1024x1024",
+      quality: "standard",
+      response_format: "url",
+    });
+
+    const imageUrl = imageResponse.data?.[0]?.url;
+    if (!imageUrl) {
+      res.status(500).json({ error: "No image returned from AI" });
       return;
     }
 
