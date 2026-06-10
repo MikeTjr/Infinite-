@@ -4,7 +4,10 @@ const requestCounts = new Map<string, { count: number; resetAt: number }>();
 
 function createRateLimiter(windowMs: number, max: number) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ?? req.ip ?? "unknown";
+    const ip =
+      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ??
+      req.ip ??
+      "unknown";
     const now = Date.now();
     const entry = requestCounts.get(ip);
 
@@ -24,5 +27,6 @@ function createRateLimiter(windowMs: number, max: number) {
   };
 }
 
-export const blendRateLimiter = createRateLimiter(60 * 1000, 5);
+export const blendRateLimiter = createRateLimiter(60 * 1000, 10);
+export const apiRateLimiter = createRateLimiter(60 * 1000, 120);
 export const defaultRateLimiter = createRateLimiter(60 * 1000, 60);
