@@ -5,7 +5,7 @@ import { Heart, X, Check, Clock, ChevronRight, ArrowLeft, RotateCcw } from 'luci
 import { Button } from '../components/ui/button';
 import { NavBar } from '../components/layout/NavBar';
 import { AppState, Card, CardType, SessionRecord } from '../lib/types';
-import { getCardsForSession, CARD_TYPE_LABELS, CARD_TYPE_COLORS } from '../lib/cards';
+import { getCardsForSession, CARD_TYPE_LABELS, CARD_TYPE_COLORS, getNostalgiaCardsForYear } from '../lib/cards';
 import { MOOD_EMOJIS } from '../lib/gameLogic';
 
 interface PlayProps {
@@ -26,6 +26,7 @@ const CARD_BG: Record<CardType, string> = {
   thunder: 'from-slate-800/40 to-slate-700/20',
   legacy: 'from-emerald-500/20 to-green-500/10',
   repair: 'from-violet-400/20 to-purple-400/10',
+  nostalgia: 'from-amber-900/20 to-amber-700/10',
 };
 
 function ThisOrThatCard({ card, onChoice }: { card: Card; onChoice: (choice: 'A' | 'B') => void }) {
@@ -267,13 +268,28 @@ export default function Play({ state, onSessionComplete, onDrift, onAddMood }: P
   const [completedSession, setCompletedSession] = useState<SessionRecord | null>(null);
   const [moodEmoji, setMoodEmoji] = useState('');
   const [momentTag, setMomentTag] = useState('');
+  const [roomCode] = useState(() => Math.random().toString(36).substring(2, 8).toUpperCase());
+  const [showQR, setShowQR] = useState(false);
 
   const seasonFocus = state.journey
     ? (state.journey as any).cardTypes
     : undefined;
 
   const startSession = () => {
-    const deck = getCardsForSession(state.sessions.length, state.driftedCards, state.retiredCards, seasonFocus);
+    let deck = getCardsForSession(state.sessions.length, state.driftedCards, state.retiredCards, seasonFocus);
+    if (state.couple?.anniversaryDate) {
+      const anniversaryYear = new Date(state.couple.anniversaryDate).getFullYear();
+      const nostalgiaPool = getNostalgiaCardsForYear(anniversaryYear);
+      const shuffledNostalgia = [...nostalgiaPool].sort(() => Math.random() - 0.5);
+      const injectCount = 3 + Math.floor(Math.random() * 3);
+      const nostalgiaCards = shuffledNostalgia.slice(0, injectCount);
+      const combined = [...deck];
+      for (const card of nostalgiaCards) {
+        const pos = Math.floor(Math.random() * (combined.length + 1));
+        combined.splice(pos, 0, card);
+      }
+      deck = combined;
+    }
     setCards(deck);
     setCurrentIndex(0);
     setCardsPlayed(0);
@@ -386,6 +402,16 @@ export default function Play({ state, onSessionComplete, onDrift, onAddMood }: P
             <motion.div className="h-full bg-primary rounded-full" animate={{ width: `${progress * 100}%` }} />
           </div>
           <span className="text-xs text-muted-foreground whitespace-nowrap">{currentIndex + 1} / {cards.length}</span>
+          <button
+            onClick={() => setShowQR(true)}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-card/60"
+            title="Watch on TV"
+          >
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
+            </svg>
+            <span className="hidden sm:inline">TV</span>
+          </button>
         </div>
 
         <div className="flex-1 flex items-center justify-center w-full">
@@ -452,6 +478,35 @@ export default function Play({ state, onSessionComplete, onDrift, onAddMood }: P
             {moodEmoji ? 'Save & Continue' : 'Continue'}
           </Button>
         </motion.div>
+      </div>
+    );
+  }
+
+  if (showQR) {
+    return (
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+        onClick={() => setShowQR(false)}
+      >
+        <div className="bg-card rounded-2xl border border-border shadow-2xl p-6 w-full max-w-xs space-y-4 text-center" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between">
+            <h3 className="font-serif text-base font-semibold text-foreground">Watch on TV</h3>
+            <button onClick={() => setShowQR(false)} className="text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">Scan on your TV or any second screen to watch live</p>
+          <div className="flex justify-center">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + '/watch/' + roomCode)}`}
+              alt="QR Code for TV"
+              className="w-48 h-48 rounded-xl border border-border/30"
+            />
+          </div>
+          <p className="text-3xl font-mono font-bold tracking-[0.3em] text-foreground">{roomCode}</p>
+          <p className="text-xs text-muted-foreground">Or go to <span className="font-mono">/watch/{roomCode}</span></p>
+          <Button className="w-full" onClick={() => setShowQR(false)}>Close</Button>
+        </div>
       </div>
     );
   }
